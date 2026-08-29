@@ -1,137 +1,87 @@
-# Reproducibility and replication protocol
+# Reproducibility and independent replication
 
-## Status
+## Scope
 
-This document defines the contract for the reproducibility repository while the reference experimental campaign is still being consolidated in the development repository.
+This repository publishes a reproducible **protocol and implementation specification**, not the private reference source code.
 
-Source development repository:
+It supports two scientific goals:
 
-https://github.com/elVladdi/gci-nandina-rag
+1. **Reference-study verification** — inspect frozen configurations, manifests, hashes, expected metrics and redistributable artifacts from the reference experimental campaign.
+2. **Independent replication** — implement the published protocol independently and apply it to a compatible external dataset, tariff hierarchy and normative corpus.
 
-## Two supported goals
+## Reproducibility layers
 
-This repository must support two distinct scientific uses:
+Reference-study verification should distinguish:
 
-1. **Reference reproduction** — rerun a frozen experimental preset with the same inputs, configuration and expected outputs.
-2. **External replication** — execute the same protocol on a compatible user-provided dataset and produce a new manifest and result set.
+1. **Integrity verification** — hashes, schemas, counts, versions and frozen configuration.
+2. **Method verification** — protocol sheets, parameters, invariants, metric definitions and expected information-flow constraints are complete enough for independent implementation.
+3. **Result verification** — published expected metrics/artifacts can be traced to frozen manifests and, when permitted, checked against redistributable case-level evidence.
 
-External replication does not require numerical agreement with the reference experiment. What must remain comparable is the protocol, data contract, evaluation logic and reporting structure.
+Independent replication should distinguish:
 
-## Reproducibility levels
+1. data-contract validity;
+2. partition-independence validity;
+3. component-level conformance to published protocol sheets;
+4. conformance to formal input/output specifications;
+5. test-vector conformance where available;
+6. independent result generation and replication manifest creation.
 
-A reference release should distinguish:
-
-1. **Integrity reproduction** — verify hashes, schema, counts and frozen configuration.
-2. **Computational reproduction** — rerun canonical experiments from frozen inputs.
-3. **Result reproduction** — regenerate registered metrics and artifacts and compare them with expected results.
-
-A release should not be described as fully reproducible unless all applicable levels pass from a clean environment.
-
-## Replication levels for user-provided data
-
-A custom run should distinguish:
-
-1. **Data-contract validation** — required logical fields can be mapped and satisfy integrity constraints.
-2. **Partition validation** — no forbidden overlap exists across splits, especially at configured grouping-unit level.
-3. **Protocol execution** — canonical retrieval/evaluation stages run without source-code modification.
-4. **Independent result generation** — metrics, manifests and error analyses are produced for the external dataset.
-
-## Canonical workflow
+## Canonical scientific workflow
 
 ```text
-validate environment
-      -> validate configuration
-      -> validate data contract
-      -> validate/create grouped split
-      -> audit duplicates and support
+define taxonomy + target depth + scope
+      -> define data contract
+      -> define/version normative corpus
+      -> validate/create independent partitions
+      -> audit dependence, duplicates and support
       -> historical retrieval
-      -> normative retrieval baselines
-      -> dense/comparator experiments where enabled
-      -> candidate pools / integration
-      -> diagnostic LLM reranking where enabled
-      -> controlled Top-k explanation where enabled
-      -> integrated error analysis
-      -> generate run manifest and metrics
+      -> normative retrieval
+      -> candidate integration / diagnostic reranking where enabled
+      -> controlled explanation where enabled
+      -> evaluation and error analysis
+      -> replication manifest
 ```
 
-A frozen reference preset may additionally compare generated outputs with exact expected values or hashes.
+The executable realization of this workflow is deliberately left to the independent implementation. Conformance is evaluated against `protocol/`, `specifications/`, `test_vectors/` and reference manifests, not against private source code.
 
-## Configuration principle
+## Determinism and traceability
 
-Dataset-specific decisions must be supplied through configuration rather than hard-coded globally. At minimum, the configuration layer should be able to identify:
-
-- analysis unit;
-- grouping unit;
-- commercial-description/query field;
-- target code field;
-- optional class/chapter filter;
-- split policy;
-- retrieval strategy settings;
-- normative corpus configuration;
-- enabled/disabled experimental stages.
-
-## Determinism requirements
-
-Where technically possible, runners must record and enforce:
+Where technically applicable, a replication should record:
 
 - explicit random seeds;
-- frozen input hashes for reference presets;
-- configuration hashes;
-- model identifiers and local model hashes when redistribution permits;
-- package versions;
-- Python version;
-- command line invocation;
-- Git commit SHA;
+- dataset and corpus identities/hashes;
+- configuration hash;
+- implementation version/commit;
+- library/runtime versions;
+- model identifiers and prompt hashes for LLM-enabled stages;
 - execution timestamp;
-- output hashes.
+- output hashes;
+- declared deviations from the reference protocol.
 
-If a component is inherently nondeterministic, document the source of nondeterminism and the numerical or qualitative acceptance criterion.
+If a component is nondeterministic, the replicator should document the source and use the tolerance or qualitative acceptance rule defined by the corresponding protocol sheet/test vector.
 
-## Cross-platform serialization
+## Cross-platform artifacts
 
-Text artifacts should use LF line endings. Frozen CSV, JSON and text outputs must not change byte representation because of platform-specific checkout behavior.
+Published deterministic text artifacts should use stable serialization and LF line endings when frozen hashes are provided.
 
-## Target entry points
+## What belongs here
 
-Reference reproduction:
+This repository may contain:
 
-```bash
-python scripts/reproduce_all.py --config configs/presets/reference_class87_v0.2.yaml
-```
+- protocol sheets and pseudocode;
+- formal schemas and configuration examples;
+- frozen reference manifests and expected metrics;
+- test vectors;
+- synthetic examples;
+- provenance statements and methodological-validity guidance.
 
-External replication:
+It does not contain:
 
-```bash
-python scripts/validate_dataset.py --config configs/examples/custom_dataset.yaml
-python scripts/run_experiment.py --config configs/examples/custom_dataset.yaml
-```
-
-These interfaces are targets until the corresponding canonical runners are frozen.
-
-## Clean-environment validation
-
-Before a stable reference release is published, perform at least one reproduction from a fresh clone in an isolated environment and record:
-
-- operating system;
-- Python version;
-- dependency lock hash;
-- source commit;
-- runtime duration;
-- PASS/FAIL checks;
-- deviations from expected results.
-
-A custom-data example should also be validated from a clean environment using a small synthetic dataset.
-
-## What does not belong here
-
-This repository should not contain:
-
-- exploratory notebooks unless required by a canonical release;
-- obsolete experiment versions;
-- ad hoc diagnostics;
-- unrestricted raw administrative data;
+- private reference source code;
+- operational scripts or production pipelines;
+- proprietary reusable implementation modules;
+- unrestricted administrative data;
 - local model caches;
-- manuscript/drafting files;
-- full development history copied from the source repository.
+- unrelated development history.
 
-Those remain in the development repository or external archival locations.
+See `docs/REPLICATION_MODEL.md` for the publication boundary.
