@@ -2,13 +2,15 @@
 
 ## Status
 
-This file is intentionally incomplete until EXP-04 and the final thesis analysis are closed.
+This registry is intentionally incomplete while the reference experimental campaign is still being consolidated.
 
-Its final purpose is to define the numerical and artifact-level acceptance criteria for a reproducibility release.
+Its purpose is to define numerical and artifact-level acceptance criteria for frozen reproducibility presets.
+
+Custom-data replications do **not** need to match these values. They generate their own independent result manifests.
 
 ## Result registry format
 
-Each expected result should record:
+Each expected reference result should record:
 
 | Field | Description |
 |---|---|
@@ -19,13 +21,13 @@ Each expected result should record:
 | Expected value | Exact value or expected hash |
 | Tolerance | Numerical tolerance when exact equality is not appropriate |
 | Source commit | Commit from the development repository |
-| Thesis location | Table/figure/section using the result |
+| Research artifact | Report/table/figure identifier when applicable |
 
-## Currently closed source result
+## Currently closed reference result
 
-At scaffold creation time, EXP-04 Fase A — Historical BM25 v0.2 has been completed in the development repository, but its final reproducibility package has not yet been imported here because EXP-04 as a whole remains open.
+EXP-04 Fase A — Historical BM25 v0.2 has been completed in the development repository. Its final reproducibility package has not yet been imported here because the wider EXP-04 campaign remains open.
 
-The source repository currently reports the following approved Fase A metrics on the v0.2 evaluation split:
+Current approved reference metrics on the v0.2 evaluation split:
 
 | Metric | Value |
 |---|---:|
@@ -37,8 +39,10 @@ The source repository currently reports the following approved Fase A metrics on
 | Top-50 | 0.9914772727272727 |
 | MRR | 0.6297077493524843 |
 
-These values are documented here only as a provisional cross-reference. They do not yet constitute a release acceptance contract for this repository.
+These values are a provisional cross-reference until a stable reference release freezes its complete acceptance manifest.
 
-## Final validation behavior
+## Validation behavior
 
-The future reproduction runner should compare regenerated outputs with this registry and emit explicit PASS/FAIL results. Exact hashes should be preferred for deterministic artifacts; numerical tolerances should be used only when technically justified.
+The future reference runner should compare regenerated outputs with this registry and emit explicit PASS/FAIL results. Exact hashes should be preferred for deterministic artifacts; numerical tolerances should be used only when technically justified.
+
+A custom replication should instead emit its own metrics, configuration hash, input hashes and run manifest without comparing numerical performance to this registry unless the user explicitly requests such a comparison.
