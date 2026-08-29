@@ -1,10 +1,17 @@
-# Frozen configurations
+# Configurations
 
-This directory will contain only configurations required to reproduce final thesis experiments.
+This directory separates frozen reference presets from reusable examples for external replication.
+
+Structure:
+
+- `presets/` — immutable configurations tied to identifiable experimental reference releases;
+- `examples/` — templates for user-provided datasets;
+- `schemas/` — machine-readable configuration contracts when frozen.
 
 Rules:
 
-- copy a configuration only after the corresponding experimental Gate is closed;
-- preserve the original source commit and SHA-256 in the release manifest;
+- copy a reference configuration only after the corresponding experimental Gate is closed;
+- preserve source commit and SHA-256 in the release manifest;
 - do not keep exploratory variants here;
-- never modify a configuration in place after it has been included in a release; create a new version instead.
+- never modify a released reference preset in place; create a new version;
+- custom configurations must map logical dataset roles instead of depending on fixed source-column names.
