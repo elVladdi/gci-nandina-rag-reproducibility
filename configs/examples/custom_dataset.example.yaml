@@ -1,0 +1,32 @@
+experiment:
+  id: custom_hs_experiment
+  mode: custom
+
+dataset:
+  path: data/my_customs.csv
+  analysis_unit: item_id
+  grouping_unit: declaration_id
+  description_column: product_description
+  label_column: hs_code
+  target_code_level: hs6
+
+split:
+  strategy: grouped
+  train_ratio: 0.70
+  dev_ratio: 0.10
+  eval_ratio: 0.20
+  seed: 2026
+
+retrieval:
+  historical:
+    enabled: true
+    method: bm25
+  normative:
+    enabled: false
+
+llm:
+  reranker_enabled: false
+  explainer_enabled: false
+
+output:
+  directory: results/custom_hs_experiment
