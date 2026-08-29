@@ -1,33 +1,30 @@
-# Expected results
+# Expected reference results
 
-## Status
+## Purpose
 
-This registry is intentionally incomplete while the reference experimental campaign is still being consolidated.
+This registry records numerical and artifact-level evidence from frozen reference experiments. It is used for traceability and independent verification of the published protocol; it is **not** an executable acceptance suite for private reference code.
 
-Its purpose is to define numerical and artifact-level acceptance criteria for frozen reproducibility presets.
+External replications do not need to match these values. They should generate their own metrics and replication manifests.
 
-Custom-data replications do **not** need to match these values. They generate their own independent result manifests.
-
-## Result registry format
+## Registry format
 
 Each expected reference result should record:
 
 | Field | Description |
 |---|---|
 | Result ID | Stable identifier |
-| Experiment | Canonical experiment name |
-| Input manifest | Frozen input/config manifest |
-| Metric/artifact | Metric, table, figure or output file |
-| Expected value | Exact value or expected hash |
-| Tolerance | Numerical tolerance when exact equality is not appropriate |
-| Source commit | Commit from the development repository |
+| Experiment | Reference experiment identifier |
+| Input manifest | Frozen data/corpus/configuration manifest |
+| Protocol sheet(s) | Published component specifications governing the result |
+| Metric/artifact | Metric, table, figure or case-level artifact |
+| Expected value | Exact value or expected hash where appropriate |
+| Tolerance | Numerical tolerance when exact equality is not justified |
+| Source implementation record | Private/reference implementation commit or version identifier when disclosure is permitted |
 | Research artifact | Report/table/figure identifier when applicable |
 
-## Currently closed reference result
+## Current closed reference evidence
 
-EXP-04 Fase A — Historical BM25 v0.2 has been completed in the development repository. Its final reproducibility package has not yet been imported here because the wider EXP-04 campaign remains open.
-
-Current approved reference metrics on the v0.2 evaluation split:
+The development project has completed a historical BM25 reference evaluation on a frozen v0.2 evaluation split. The currently approved aggregate values are:
 
 | Metric | Value |
 |---|---:|
@@ -39,10 +36,21 @@ Current approved reference metrics on the v0.2 evaluation split:
 | Top-50 | 0.9914772727272727 |
 | MRR | 0.6297077493524843 |
 
-These values are a provisional cross-reference until a stable reference release freezes its complete acceptance manifest.
+These values remain provisional registry entries until the corresponding protocol sheet, manifest, redistributable evidence and test vectors are frozen in this repository.
 
-## Validation behavior
+## Independent-implementation verification
 
-The future reference runner should compare regenerated outputs with this registry and emit explicit PASS/FAIL results. Exact hashes should be preferred for deterministic artifacts; numerical tolerances should be used only when technically justified.
+A third party may use published test vectors and protocol invariants to validate component conformance. Matching the full reference metric table is neither required nor expected when the third party uses different data, taxonomy, corpus, scope or implementation choices allowed by the protocol.
 
-A custom replication should instead emit its own metrics, configuration hash, input hashes and run manifest without comparing numerical performance to this registry unless the user explicitly requests such a comparison.
+## External replication reporting
+
+A replication should report its own:
+
+- dataset/corpus/configuration identities;
+- protocol-sheet versions implemented;
+- declared deviations;
+- case-level outputs where permissible;
+- aggregate metrics;
+- sensitivity/error analyses;
+- implementation/runtime metadata;
+- replication manifest.
