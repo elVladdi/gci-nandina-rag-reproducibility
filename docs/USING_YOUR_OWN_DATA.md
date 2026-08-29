@@ -2,37 +2,82 @@
 
 ## Scope
 
-This repository is intended to support replication of the experimental protocol on compatible user-provided data. The objective is to preserve the procedure and evaluation logic, not to force external datasets to resemble the reference dataset in size or distribution.
+This repository supports replication of the experimental protocol on compatible user-provided customs data. External datasets do not need to match the reference study in country, chapter coverage, sample size, code distribution, nomenclature extension or target-code depth.
+
+A replication may use one chapter, several chapters, or the entire tariff universe available in the data.
 
 ## Expected workflow
 
 ```text
-prepare data
+prepare customs data
+  -> define tariff hierarchy and target level
   -> map logical fields
-  -> validate data contract
-  -> validate/create split
+  -> configure normative corpus
+  -> validate data and taxonomy contracts
+  -> validate/create grouped split
   -> audit independence and duplicates
-  -> configure retrieval/corpora
-  -> run enabled experimental stages
-  -> generate metrics and run manifest
+  -> run historical retrieval
+  -> run normative retrieval
+  -> run optional integration/LLM stages
+  -> generate metrics, errors and manifest
 ```
 
 ## 1. Prepare the dataset
 
-A custom dataset should provide at minimum:
+At minimum provide:
 
 - a unique analysis identifier;
 - a commercial/product description;
-- a reference HS/NANDINA-compatible label;
-- preferably a grouping identifier if several rows may originate from the same declaration or dependent source.
+- a reference tariff label at the chosen target level;
+- preferably a grouping identifier when several rows originate from a common declaration or dependent source.
 
 See [`DATA_CONTRACT.md`](DATA_CONTRACT.md).
 
-## 2. Create a configuration
+## 2. Define the classification system
 
-Do not rename source columns merely to imitate the reference experiment. Map them in configuration instead.
+Do not assume that the target must be NANDINA-8. Declare the jurisdiction, nomenclature and target depth explicitly.
 
-Example:
+Example for a national 10-digit tariff:
+
+```yaml
+classification:
+  family: HS
+  jurisdiction: CL
+  nomenclature: national_tariff
+  target_digits: 10
+  hierarchy_digits: [2, 4, 6, 8, 10]
+```
+
+For an HS-6 study:
+
+```yaml
+classification:
+  family: HS
+  jurisdiction: international
+  nomenclature: HS
+  target_digits: 6
+  hierarchy_digits: [2, 4, 6]
+```
+
+## 3. Define experimental scope
+
+All chapters:
+
+```yaml
+scope:
+  chapters: null
+```
+
+A subset:
+
+```yaml
+scope:
+  chapters: [84, 85, 87]
+```
+
+Filtering by chapter is a study-design choice. The framework itself is chapter-agnostic.
+
+## 4. Configure your data mapping
 
 ```yaml
 experiment:
@@ -44,92 +89,95 @@ dataset:
   analysis_unit: line_id
   grouping_unit: declaration_id
   description_column: description
-  label_column: hs6
-  target_code_level: hs6
-
-split:
-  strategy: grouped
-  train_ratio: 0.70
-  dev_ratio: 0.10
-  eval_ratio: 0.20
-  seed: 2026
+  label_column: national_tariff_code
 ```
 
-A later stable release will provide a validated schema for this file.
+Do not rename source columns merely to imitate a reference dataset.
 
-## 3. Validate before running
+## 5. Configure the normative corpus
+
+The explanation/evidence pipeline depends on the jurisdiction and target nomenclature. A user working at a national 10-digit level should provide normative material that supports the relevant national extension whenever available.
+
+```yaml
+normative:
+  enabled: true
+  corpus_path: data/normative/my_jurisdiction/
+  jurisdiction: CL
+  nomenclature: national_tariff
+  supported_digits: [2, 4, 6, 8, 10]
+```
+
+Possible corpus layers include international HS material, section/chapter notes, interpretative rules, regional nomenclature and national tariff or complementary notes.
+
+If normative coverage is shallower than the target code, the run must disclose that mismatch. The generation stage must not present unsupported national-level detail as if it were grounded in the corpus.
+
+See [`TAXONOMY_AND_NORMATIVE_CORPUS.md`](TAXONOMY_AND_NORMATIVE_CORPUS.md).
+
+## 6. Validate before running
 
 Target interface:
 
 ```bash
-python scripts/validate_dataset.py --config configs/examples/custom_dataset.yaml
+python scripts/validate_dataset.py --config configs/examples/custom_dataset.example.yaml
 ```
 
 The validator should report:
 
 - row count;
-- unique analysis units;
-- unique groups;
+- unique analysis units and groups;
 - unique target codes;
-- missing descriptions;
-- duplicate IDs;
-- target-code format;
+- label-format compatibility with target depth;
+- hierarchy consistency;
+- chapter scope actually retained;
+- missing descriptions and duplicate IDs;
 - group overlap across supplied splits;
 - exact/near duplicates across partitions when enabled;
-- support of evaluation labels in the historical bank.
+- support of evaluation labels in the historical bank;
+- normative corpus identity and supported hierarchy levels;
+- any gap between classification depth and normative-evidence depth.
 
-Validation warnings and failures must be preserved in the run manifest.
+## 7. Split policy
 
-## 4. Split policy
+If the dataset is unsplit, grouped partitioning is recommended whenever related rows share a higher-level source. Row-wise random splitting should not be used when it would place dependent observations in different partitions.
 
-If the user supplies one unsplit dataset, grouped partitioning is recommended whenever related rows share a higher-level source.
+If pre-existing partitions are supplied, audit them rather than silently rewriting them.
 
-The framework should avoid row-wise random splitting when doing so would place dependent observations in different partitions.
+## 8. Historical retrieval
 
-If the user supplies pre-existing partitions, they should be audited rather than silently rewritten.
+Historical retrieval uses the configured description as query and the historical partition as precedent bank. Ground-truth labels are evaluation targets only and must not become retrieval features.
 
-## 5. Historical retrieval
+The ranked unit may be the configured target code while hierarchical metrics can additionally evaluate errors at coarser levels.
 
-The historical retrieval stage uses the configured description field as query and the historical partition as precedent bank. Target labels are used only for evaluation, not as query content.
+## 9. Normative retrieval
 
-## 6. Normative retrieval
+Normative retrieval is specific to the configured corpus. Its version, jurisdiction, nomenclature, supported levels, code mapping and SHA-256 must be recorded.
 
-A custom run may use a different normative corpus from the reference experiment. The corpus must have explicit provenance, version, code mapping and hash in the run manifest.
+Comparisons between historical and normative strategies must use the same evaluation instances when direct metric comparison is claimed.
 
-## 7. LLM-enabled stages
+## 10. LLM-enabled stages
 
-When enabled, model name/version, parameters, prompt hash, local model identity and candidate constraints should be recorded. A model must not be allowed to access hidden evaluation labels.
+When enabled, record model name/version, parameters, prompt hash, local model identity and candidate constraints. The model must not receive hidden evaluation labels.
 
-## 8. Results
+The explanation must distinguish evidence available at each hierarchy level and explicitly acknowledge missing normative coverage.
 
-A custom run should generate its own output directory and manifest containing at least:
+## 11. Results and manifest
+
+A custom run should record at least:
 
 - experiment ID;
-- configuration hash;
 - framework version/commit;
-- data hashes;
-- corpus hashes;
+- configuration hash;
+- data and corpus hashes;
+- classification system, jurisdiction and target depth;
+- chapter scope;
 - partition counts;
-- retrieval metrics;
-- error analysis;
-- model configuration where applicable;
-- output hashes.
+- historical and normative coverage;
+- retrieval metrics and hierarchy-aware error analysis;
+- LLM configuration where applicable;
+- output hashes and warnings.
 
 A custom run should not claim to reproduce reference numerical values.
 
-## 9. Comparing with the reference experiment
+## 12. Data governance
 
-Comparison is optional. When performed, clearly distinguish:
-
-- differences in dataset composition;
-- target-code coverage;
-- partition policy;
-- normative corpus;
-- model/configuration choices;
-- resulting performance metrics.
-
-Do not interpret raw metric differences as algorithmic superiority without controlling those factors.
-
-## 10. Data governance
-
-Do not commit confidential or restricted external data to this public repository. Keep such data outside Git or in a local ignored path and record only the metadata/hashes appropriate for the experiment.
+Do not commit confidential or restricted customs data to this public repository. Keep such data in a local ignored path or controlled storage and record only metadata/hashes appropriate for reproducibility.
