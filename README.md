@@ -1,66 +1,63 @@
 # gci-nandina-rag-reproducibility
 
-**Framework experimental reproducible para recomendación auditable de clasificación arancelaria jerárquica**  
-**Reproducible experimental framework for auditable hierarchical tariff-classification recommendation**  
-**Cadre expérimental reproductible pour la recommandation auditable de classification tarifaire hiérarchique**
+**Especificación reproducible para replicación independiente de experimentos de clasificación arancelaria auditable**  
+**Reproducible specification for independent replication of auditable tariff-classification experiments**  
+**Spécification reproductible pour la réplication indépendante d'expériences de classification tarifaire auditable**
 
 [Español](#español) · [English](#english) · [Français](#français)
-
-Repositorio de desarrollo relacionado / Related development repository / Dépôt de développement associé: [`gci-nandina-rag`](https://github.com/elVladdi/gci-nandina-rag)
 
 ---
 
 # Español
 
-## ¿Qué es este repositorio?
+## Propósito
 
-Este repositorio proporciona una implementación reproducible y parametrizable de un **protocolo experimental para recomendación auditable de clasificación arancelaria jerárquica**. El protocolo combina recuperación histórica, recuperación de evidencia normativa y, cuando se habilita, generación controlada con un LLM local.
+Este repositorio publica el **protocolo experimental, las especificaciones funcionales, los contratos de datos, las configuraciones de referencia, los artefactos verificables y los vectores de prueba** necesarios para que terceros puedan implementar y replicar independientemente una investigación experimental sobre recomendación auditable de clasificación arancelaria jerárquica.
 
-```text
-Descripción comercial
-        │
-        ▼
-Recuperación histórica ─────► precedentes y candidatos
-        │
-        ├────────────────────► evidencia normativa compatible
-        │
-        ▼
-Integración / contexto
-        │
-        ▼
-LLM local opcional
-        │
-        ▼
-Salida auditable + métricas + trazabilidad
-```
+**Este repositorio no distribuye la implementación de software de referencia.** Su objetivo es describir el procedimiento con suficiente precisión para permitir una implementación independiente y verificable.
 
-El framework **no está limitado a un capítulo, clase, país, número fijo de dígitos ni a NANDINA**. Puede utilizarse con un único capítulo, varios capítulos o todo el universo arancelario disponible, y con distintos niveles de la jerarquía HS o extensiones regionales/nacionales, siempre que los datos y el corpus normativo sean compatibles con el nivel objetivo.
+La replicación puede utilizar datos propios, otra jurisdicción, uno o varios capítulos o el universo arancelario completo disponible, y distintos niveles de la jerarquía HS o de sus extensiones regionales/nacionales.
 
-No emite una clasificación aduanera jurídicamente vinculante y no sustituye la revisión experta.
+## Qué se publica y qué no
 
-## Modos de uso
-
-| Modo | Datos | Objetivo |
-|---|---|---|
-| `reference` | Dataset, configuración y artefactos congelados | Reproducir un estudio experimental de referencia |
-| `custom` | Dataset y corpus proporcionados por el usuario | Replicar el protocolo con datos independientes |
-| `synthetic` | Dataset demostrativo | Probar instalación y flujo sin datos sensibles |
-
-> Una ejecución con datos propios replica el **protocolo experimental**; no se espera que reproduzca los mismos valores numéricos del estudio de referencia.
-
-## ¿Qué sistemas y niveles de clasificación admite?
-
-La jerarquía objetivo es configurable. Ejemplos:
-
-| Nivel | Ejemplo conceptual |
+| Se publica | No se publica aquí |
 |---|---|
-| HS-2 | Capítulo |
-| HS-4 | Partida |
-| HS-6 | Subpartida del Sistema Armonizado |
-| 8 dígitos | Extensión regional o nacional, por ejemplo NANDINA cuando corresponda |
-| 10 dígitos | Subpartida nacional u otra extensión jurisdiccional |
+| Protocolo experimental completo | Código fuente de la implementación de referencia |
+| Especificaciones funcionales por componente | Scripts operativos de la implementación de referencia |
+| Contrato de datos y configuración | Pipeline productivo |
+| Pseudocódigo cuando sea necesario | Componentes de software reutilizables |
+| Parámetros y decisiones experimentales | Implementación interna del framework |
+| Esquemas de entradas y salidas | Datos restringidos o confidenciales |
+| Manifests, hashes y procedencia | Material de terceros sin derechos de redistribución |
+| Métricas y resultados verificables | |
+| Vectores de prueba y ejemplos sintéticos | |
 
-La configuración debe declarar la nomenclatura, la jurisdicción, los niveles jerárquicos disponibles y el nivel objetivo. Por ejemplo:
+La especificación no debe ser deliberadamente vaga: cada componente deberá describirse con suficiente detalle para que un tercero pueda desarrollar su propia implementación y contrastarla contra entradas, salidas e invariantes publicados.
+
+## Dos objetivos distintos
+
+### Reproducción documental y verificable del estudio de referencia
+
+Permite inspeccionar configuraciones congeladas, manifests, hashes, resultados esperados, métricas y decisiones metodológicas del estudio experimental de referencia.
+
+### Replicación independiente
+
+Permite que una organización implemente el protocolo con su propio software y lo aplique a sus propios datos, nomenclatura y corpus normativo.
+
+Una réplica externa **no necesita utilizar el mismo capítulo, país, cantidad de dígitos ni distribución de datos del estudio de referencia**.
+
+## Alcance de clasificación configurable
+
+La especificación se basa en una jerarquía arancelaria configurable. Puede abarcar, según la nomenclatura disponible:
+
+- HS-2: capítulo;
+- HS-4: partida;
+- HS-6: subpartida armonizada;
+- extensiones regionales a 8 dígitos, como NANDINA cuando corresponda;
+- subpartidas nacionales de 8, 10 u otra cantidad de dígitos;
+- uno, varios o todos los capítulos presentes en los datos.
+
+Ejemplo conceptual:
 
 ```yaml
 classification:
@@ -71,53 +68,29 @@ classification:
   hierarchy_digits: [2, 4, 6, 8, 10]
 
 scope:
-  chapters: null   # null = todos los capítulos presentes en el dataset
+  chapters: null   # todos los capítulos disponibles
 ```
 
-También puede restringirse el experimento:
+La selección de un capítulo particular es una decisión de diseño experimental, no una limitación del protocolo.
 
-```yaml
-scope:
-  chapters: [84, 85]
-```
+## El corpus normativo forma parte del experimento
 
-La selección de uno o varios capítulos es una **decisión experimental**, no una limitación del framework.
+El corpus normativo debe ser coherente con la jurisdicción, nomenclatura, versión temporal y profundidad objetivo. Puede incluir nomenclatura HS, Reglas Generales para la Interpretación, notas de sección/capítulo, extensiones regionales, aranceles nacionales, notas complementarias y otras fuentes normativas explícitamente declaradas.
 
-## El corpus normativo también es configurable
+La especificación exige registrar su procedencia, versión, cobertura jerárquica y hashes cuando corresponda.
 
-La evidencia normativa debe corresponder a la nomenclatura y jurisdicción que se están evaluando. Un corpus adecuado puede incluir, según el experimento:
+Si el objetivo es clasificar a 10 dígitos pero la evidencia normativa disponible solo sustenta hasta 8, esa brecha debe declararse. Una explicación no debe atribuir a la evidencia normativa una precisión que el corpus no contiene.
 
-- nomenclatura HS internacional;
-- notas de sección y capítulo;
-- Reglas Generales para la Interpretación;
-- extensiones regionales;
-- arancel o nomenclatura nacional;
-- notas complementarias nacionales;
-- otros documentos normativos definidos y versionados por la investigación.
+## Datos propios
 
-Ejemplo:
-
-```yaml
-normative:
-  enabled: true
-  corpus_path: data/normative/chile_2026/
-  jurisdiction: CL
-  nomenclature: national_tariff
-  supported_digits: [2, 4, 6, 8, 10]
-```
-
-El framework debe detectar incompatibilidades entre el nivel objetivo y la cobertura normativa. Por ejemplo, si la clasificación objetivo es de 10 dígitos pero el corpus solo aporta evidencia hasta 8, esa limitación debe quedar explícita en los resultados y nunca ocultarse.
-
-## ¿Puedo usar mis propios datos?
-
-**Sí.** Los nombres de columnas, tamaño de muestra, país, capítulos presentes y distribución de códigos son configurables.
+Una implementación independiente debe poder mapear los datos de origen a roles lógicos, sin exigir nombres de columnas específicos.
 
 | Rol lógico | Obligatorio | Significado |
 |---|---:|---|
-| `analysis_id` | Sí | Identificador único de la instancia evaluada |
-| `description` | Sí | Descripción comercial usada como consulta |
-| `label` | Sí | Código arancelario de referencia en el nivel objetivo |
-| `group_id` | Recomendado | Unidad superior que no debe cruzar particiones cuando existe dependencia |
+| `analysis_id` | Sí | Identificador único de la instancia experimental |
+| `description` | Sí | Descripción comercial utilizada como consulta |
+| `label` | Sí | Código arancelario verdadero en el nivel objetivo |
+| `group_id` | Cuando exista dependencia | Declaración, transacción, embarque u otra unidad superior relacionada |
 
 Ejemplo:
 
@@ -128,32 +101,9 @@ CL-0002,D-001,"TABLERO DE CONTROL ELECTRICO",8537109090
 CL-0003,D-002,"BOMBA CENTRIFUGA",8413700090
 ```
 
-```yaml
-experiment:
-  id: customs_replication
-  mode: custom
+## Regla crítica de independencia
 
-dataset:
-  path: data/customs.csv
-  analysis_unit: item_id
-  grouping_unit: declaration_id
-  description_column: product_description
-  label_column: tariff_code
-
-classification:
-  family: HS
-  jurisdiction: CL
-  nomenclature: national_tariff
-  target_digits: 10
-  hierarchy_digits: [2, 4, 6, 8, 10]
-
-scope:
-  chapters: null
-```
-
-## Regla crítica: independencia entre particiones
-
-Si varias filas pertenecen a una misma declaración, transacción, embarque, factura u otra unidad dependiente, todos los registros de ese grupo deben permanecer en una sola partición.
+Cuando varias observaciones pertenecen a una misma unidad superior, esa unidad no debe cruzar las particiones experimentales:
 
 ```text
 historical.group_id ∩ development.group_id = ∅
@@ -161,319 +111,221 @@ historical.group_id ∩ evaluation.group_id  = ∅
 development.group_id ∩ evaluation.group_id = ∅
 ```
 
-El framework debe auditar además IDs compartidos, duplicados exactos, near-duplicates y soporte histórico del código objetivo.
+La implementación externa debe auditar además IDs compartidos, duplicados exactos, near-duplicates, cobertura histórica y cobertura normativa.
 
-## Flujo de una replicación externa
+## Flujo de replicación independiente
 
 ```text
-proveer datos + nomenclatura + corpus normativo
+definir pregunta experimental
         ↓
-mapear campos lógicos
+proveer datos + taxonomía + corpus normativo
         ↓
-validar jerarquía y cobertura normativa
+mapear contrato de datos
         ↓
-crear o validar particiones independientes
+implementar/validar particionado independiente
         ↓
 auditar dependencia y duplicados
         ↓
-recuperación histórica
+implementar recuperación histórica
         ↓
-recuperación normativa
+implementar recuperación normativa
         ↓
-integración / LLM opcional
+implementar integración / generación, si corresponde
         ↓
-evaluación, errores y manifest reproducible
+calcular métricas según especificación
+        ↓
+comparar con vectores de prueba e invariantes
+        ↓
+generar manifest de replicación
 ```
 
-## Quick start objetivo
+## Fichas de especificación
 
-```bash
-git clone https://github.com/elVladdi/gci-nandina-rag-reproducibility.git
-cd gci-nandina-rag-reproducibility
-python -m venv .venv
-pip install -r requirements.txt
+La estructura objetivo de `protocol/` documentará cada componente mediante una ficha independiente. Cada ficha debe contener, como mínimo:
+
+1. propósito;
+2. entradas;
+3. precondiciones;
+4. procedimiento o pseudocódigo;
+5. parámetros configurables;
+6. invariantes;
+7. salidas;
+8. validaciones;
+9. métricas aplicables;
+10. criterios de aceptación;
+11. casos límite;
+12. metadatos de reproducibilidad.
+
+Las fichas previstas incluyen validación de datos, particionado group-safe, auditoría de duplicados, recuperación histórica, recuperación normativa plana y jerárquica, recuperación densa cuando corresponda, integración de candidatos, reranking diagnóstico, construcción de contexto, explicación controlada, evaluación y generación de manifests.
+
+## Vectores de prueba
+
+Además de las especificaciones textuales, se publicarán casos de entrada/salida verificables para comprobar implementaciones independientes.
+
+Conceptualmente:
+
+```text
+entrada publicada
+      ↓
+implementación independiente
+      ↓
+salida obtenida
+      ↓
+comparación con salida/invariantes esperados
 ```
 
-```bash
-python scripts/validate_dataset.py --config configs/examples/custom_dataset.example.yaml
-python scripts/run_experiment.py --config configs/examples/custom_dataset.example.yaml
-```
-
-Para una reproducción exacta de un estudio de referencia se utilizará el preset versionado correspondiente:
-
-```bash
-python scripts/reproduce_all.py --config configs/presets/<reference-preset>.yaml
-```
-
-> Estos comandos representan la interfaz objetivo y se implementarán progresivamente a medida que se congelen los componentes experimentales.
+Los vectores de prueba no sustituyen la replicación con datos reales, pero permiten verificar que componentes críticos interpretan correctamente la especificación.
 
 ## ¿Cuándo una réplica es metodológicamente válida?
 
 Como mínimo debe:
 
-- definir explícitamente la nomenclatura y el nivel objetivo;
-- utilizar etiquetas compatibles con ese nivel;
-- registrar la versión y cobertura del corpus normativo;
-- mantener independientes los grupos relacionados entre particiones;
-- impedir que la etiqueta verdadera entre en la consulta o generación;
-- comparar estrategias sobre las mismas instancias de evaluación;
+- declarar nomenclatura, jurisdicción, versión y nivel objetivo;
+- documentar el corpus normativo y su cobertura;
+- preservar la independencia de unidades relacionadas entre particiones;
+- impedir que las etiquetas verdaderas entren en consultas, ranking o generación;
+- comparar estrategias sobre las mismas instancias cuando se formulen comparaciones directas;
 - evitar ajuste de parámetros sobre el conjunto final de evaluación;
-- preservar configuración, hashes y procedencia;
-- permitir recalcular métricas desde resultados por caso;
-- declarar cualquier limitación de cobertura histórica o normativa.
+- registrar configuración, hashes, versiones, semillas y procedencia;
+- conservar resultados por caso suficientes para recalcular métricas;
+- documentar cobertura histórica y normativa;
+- declarar cualquier desviación respecto del protocolo de referencia.
 
-## ¿Qué puede variar?
+## Estructura objetivo
 
-País, capítulos, cantidad de capítulos, nivel objetivo, extensión regional/nacional, dataset, nombres de columnas, banco histórico, corpus normativo, tamaño de muestra, modelo local y proporciones de partición pueden variar. Los controles de independencia, aislamiento de etiquetas, trazabilidad y comparabilidad experimental deben preservarse.
+```text
+gci-nandina-rag-reproducibility/
+├── README.md
+├── protocol/                 # fichas técnicas del procedimiento
+│   ├── data/
+│   ├── splitting/
+│   ├── retrieval/
+│   ├── ranking/
+│   ├── rag/
+│   ├── evaluation/
+│   └── audit/
+├── specifications/           # contratos y esquemas formales
+│   ├── data_contract/
+│   ├── configuration/
+│   ├── inputs_outputs/
+│   └── manifests/
+├── reference_experiment/     # configuración y evidencia congelada
+│   ├── configuration/
+│   ├── manifests/
+│   ├── expected_metrics/
+│   └── expected_results/
+├── test_vectors/             # entradas/salidas para validar implementaciones
+├── examples/
+│   └── synthetic/
+└── docs/
+    ├── REPLICATION_GUIDE.md
+    ├── TAXONOMY_AND_NORMATIVE_CORPUS.md
+    └── METHODOLOGICAL_VALIDITY.md
+```
 
-## Documentación
+## Estado actual
 
-- [`docs/USING_YOUR_OWN_DATA.md`](docs/USING_YOUR_OWN_DATA.md)
-- [`docs/DATA_CONTRACT.md`](docs/DATA_CONTRACT.md)
-- [`docs/TAXONOMY_AND_NORMATIVE_CORPUS.md`](docs/TAXONOMY_AND_NORMATIVE_CORPUS.md)
-- [`docs/EXPERIMENT_PROTOCOL.md`](docs/EXPERIMENT_PROTOCOL.md)
-- [`docs/REPRODUCIBILITY.md`](docs/REPRODUCIBILITY.md)
-- [`docs/DATA_PROVENANCE.md`](docs/DATA_PROVENANCE.md)
-- [`docs/EXPECTED_RESULTS.md`](docs/EXPECTED_RESULTS.md)
+El repositorio se encuentra en construcción. Las especificaciones se incorporarán progresivamente a medida que los componentes del estudio experimental de referencia queden metodológicamente cerrados. No debe interpretarse la ausencia temporal de una ficha como una especificación implícita.
 
 ---
 
 # English
 
-## What is this repository?
+## Purpose
 
-This repository provides a reproducible and configurable implementation of an **experimental protocol for auditable hierarchical tariff-classification recommendation**. It combines historical retrieval, normative-evidence retrieval, and optional controlled generation with a local LLM.
+This repository publishes the **experimental protocol, functional specifications, data contracts, reference configurations, verifiable artifacts, and test vectors** required for third parties to independently implement and replicate experimental research on auditable hierarchical tariff-classification recommendation.
 
-The framework is **not restricted to a specific chapter, class, country, fixed code length, or NANDINA**. It can operate on one chapter, multiple chapters, or the complete tariff universe represented in the supplied data. The target can be HS-2, HS-4, HS-6, an 8-digit regional/national extension, a 10-digit national tariff line, or another compatible hierarchical extension.
+**The reference software implementation is not distributed in this repository.** The objective is to describe the procedure precisely enough to support an independent and verifiable implementation.
 
-It does not issue legally binding customs classifications and does not replace expert review.
+External replications may use their own data, jurisdiction, one or multiple chapters or the full tariff universe, and different HS or regional/national extension depths.
 
-## Usage modes
+## What is published
 
-| Mode | Data | Goal |
-|---|---|---|
-| `reference` | Frozen data/configuration | Reproduce a reference experimental study |
-| `custom` | User-provided data and corpus | Replicate the protocol on independent data |
-| `synthetic` | Demonstration data | Test installation and workflow |
+Published materials include the complete experimental protocol, component specifications, data/configuration contracts, pseudocode where required, experimental parameters, input/output schemas, manifests, hashes, provenance, expected metrics, test vectors, and synthetic examples. Reference source code, operational scripts, production pipelines, restricted data, and non-redistributable third-party material are not published here.
 
-## Configurable tariff hierarchy
+## Independent replication
 
-```yaml
-classification:
-  family: HS
-  jurisdiction: CL
-  nomenclature: national_tariff
-  target_digits: 10
-  hierarchy_digits: [2, 4, 6, 8, 10]
+An external organization can implement the protocol in its own software and apply it to its own customs data, tariff nomenclature, and normative corpus. It does **not** need to reproduce the reference experiment's chapter, jurisdiction, code depth, sample size, or data distribution.
 
-scope:
-  chapters: null   # all chapters represented in the dataset
-```
+## Configurable tariff hierarchy and normative evidence
 
-A chapter restriction is optional and experimental, not a framework constraint.
+The protocol supports HS-2, HS-4, HS-6, regional extensions such as NANDINA where applicable, national tariff extensions such as 8- or 10-digit lines, and experiments spanning one, several, or all available chapters.
 
-## Configurable normative corpus
+Normative evidence is an experimental input. Its jurisdiction, nomenclature, temporal version, hierarchical coverage, provenance, and hashes must be documented. Evidence limitations must never be hidden by the explanation stage.
 
-Normative evidence must be versioned and compatible with the selected jurisdiction, nomenclature, and target level. It may combine international HS material, section/chapter notes, interpretative rules, regional extensions, national tariff nomenclature and national complementary notes.
+## Core data roles
 
-```yaml
-normative:
-  enabled: true
-  corpus_path: data/normative/chile_2026/
-  jurisdiction: CL
-  nomenclature: national_tariff
-  supported_digits: [2, 4, 6, 8, 10]
-```
+Independent implementations map local columns to `analysis_id`, `description`, `label`, and `group_id` when observations share a dependent parent entity. Column names are not prescribed.
 
-If the target is 10 digits but the normative corpus only supports 8, the framework must report that evidence-coverage limitation explicitly.
+## Critical independence rule
 
-## Using your own data
+Related observations must not cross experimental partitions. Implementations should additionally audit shared IDs, exact and near duplicates, historical support, and normative coverage.
 
-Required logical roles are `analysis_id`, `description`, `label`, and preferably `group_id` when related observations share a parent entity. Source column names are configurable.
+## Specification sheets
 
-```yaml
-experiment:
-  id: customs_replication
-  mode: custom
+Each component specification should define purpose, inputs, preconditions, procedure/pseudocode, configurable parameters, invariants, outputs, validation, metrics, acceptance criteria, edge cases, and reproducibility metadata.
 
-dataset:
-  path: data/customs.csv
-  analysis_unit: item_id
-  grouping_unit: declaration_id
-  description_column: product_description
-  label_column: tariff_code
+## Test vectors
 
-classification:
-  family: HS
-  jurisdiction: CL
-  nomenclature: national_tariff
-  target_digits: 10
-  hierarchy_digits: [2, 4, 6, 8, 10]
+Published input/output cases and invariants will allow independent implementations to verify critical components without receiving the reference source code.
 
-scope:
-  chapters: null
-```
+## Valid replication
 
-## Critical partition rule
-
-Related records must not cross partitions:
-
-```text
-historical.group_id ∩ development.group_id = ∅
-historical.group_id ∩ evaluation.group_id  = ∅
-development.group_id ∩ evaluation.group_id = ∅
-```
-
-The framework should also audit shared IDs, exact duplicates, near-duplicates, and target-code support.
-
-## External-replication workflow
-
-```text
-provide data + tariff hierarchy + normative corpus
-  -> map logical fields
-  -> validate hierarchy and normative coverage
-  -> create/validate independent splits
-  -> audit dependence and duplicates
-  -> historical retrieval
-  -> normative retrieval
-  -> optional integration / LLM
-  -> evaluation + error analysis + reproducibility manifest
-```
-
-## Target quick start
-
-```bash
-python scripts/validate_dataset.py --config configs/examples/custom_dataset.example.yaml
-python scripts/run_experiment.py --config configs/examples/custom_dataset.example.yaml
-```
-
-A reference study will be reproduced through its own versioned preset rather than a hard-coded chapter-specific interface.
-
-## Methodologically valid replication
-
-A replication should explicitly define the nomenclature and target level, use compatible labels and normative evidence, preserve group independence, isolate evaluation labels, compare methods on the same evaluation instances, avoid tuning on final evaluation data, record hashes/provenance, and report historical/normative coverage limitations.
-
-## Documentation
-
-See `docs/USING_YOUR_OWN_DATA.md`, `docs/DATA_CONTRACT.md`, `docs/TAXONOMY_AND_NORMATIVE_CORPUS.md`, `docs/EXPERIMENT_PROTOCOL.md`, `docs/REPRODUCIBILITY.md`, `docs/DATA_PROVENANCE.md`, and `docs/EXPECTED_RESULTS.md`.
+A methodologically valid replication documents taxonomy and normative evidence, preserves group independence and label isolation, uses comparable evaluation cases for direct method comparisons, avoids final-evaluation tuning, records hashes/provenance/seeds, preserves case-level results, and explicitly reports deviations and coverage limitations.
 
 ---
 
 # Français
 
-## Qu'est-ce que ce dépôt ?
+## Objectif
 
-Ce dépôt fournit une implémentation reproductible et configurable d'un **protocole expérimental de recommandation auditable de classification tarifaire hiérarchique**. Il combine la recherche dans un historique de classifications, la recherche de preuves normatives et, de manière optionnelle, une génération contrôlée avec un LLM local.
+Ce dépôt publie le **protocole expérimental, les spécifications fonctionnelles, les contrats de données, les configurations de référence, les artefacts vérifiables et les vecteurs de test** nécessaires pour permettre à des tiers d'implémenter et de répliquer indépendamment une recherche expérimentale sur la recommandation auditable de classification tarifaire hiérarchique.
 
-Le cadre **n'est pas limité à un chapitre, une classe, un pays, une longueur de code fixe ou à NANDINA**. Il peut être utilisé sur un seul chapitre, plusieurs chapitres ou l'ensemble de l'univers tarifaire représenté dans les données. Le niveau cible peut être HS-2, HS-4, HS-6, une extension régionale ou nationale à 8 chiffres, une sous-position nationale à 10 chiffres ou une autre extension hiérarchique compatible.
+**L'implémentation logicielle de référence n'est pas distribuée dans ce dépôt.** L'objectif est de décrire la procédure avec une précision suffisante pour permettre une implémentation indépendante et vérifiable.
 
-Il ne produit pas de classement douanier juridiquement contraignant et ne remplace pas l'expertise humaine.
+Une réplication externe peut utiliser ses propres données, sa juridiction, un ou plusieurs chapitres ou l'ensemble de l'univers tarifaire, ainsi que différents niveaux du SH ou de ses extensions régionales/nationales.
 
-## Modes d'utilisation
+## Ce qui est publié
 
-| Mode | Données | Objectif |
-|---|---|---|
-| `reference` | Données/configuration figées | Reproduire une étude expérimentale de référence |
-| `custom` | Données et corpus de l'utilisateur | Répliquer le protocole sur des données indépendantes |
-| `synthetic` | Données de démonstration | Vérifier l'installation et le flux |
+Le dépôt publie le protocole expérimental complet, les spécifications par composant, les contrats de données et de configuration, le pseudocode lorsque nécessaire, les paramètres expérimentaux, les schémas d'entrée/sortie, les manifests, les empreintes cryptographiques, la provenance, les métriques attendues, les vecteurs de test et des exemples synthétiques. Le code source de référence, les scripts opérationnels, les pipelines de production, les données restreintes et les contenus tiers non redistribuables ne sont pas publiés ici.
 
-## Hiérarchie tarifaire configurable
+## Réplication indépendante
 
-```yaml
-classification:
-  family: HS
-  jurisdiction: CL
-  nomenclature: national_tariff
-  target_digits: 10
-  hierarchy_digits: [2, 4, 6, 8, 10]
+Une organisation externe peut implémenter le protocole avec son propre logiciel et l'appliquer à ses propres données douanières, sa nomenclature tarifaire et son corpus normatif. Elle n'est pas tenue de reproduire le chapitre, la juridiction, la profondeur du code, la taille de l'échantillon ou la distribution des données de l'expérience de référence.
 
-scope:
-  chapters: null   # tous les chapitres présents dans les données
-```
+## Hiérarchie et preuves normatives configurables
 
-La restriction à un ou plusieurs chapitres est une décision expérimentale facultative, et non une limitation du cadre.
+Le protocole couvre HS/SH-2, HS/SH-4, HS/SH-6, les extensions régionales telles que NANDINA lorsqu'elles sont applicables, les extensions tarifaires nationales à 8 ou 10 chiffres, ainsi que des expériences portant sur un, plusieurs ou tous les chapitres disponibles.
 
-## Corpus normatif configurable
+Le corpus normatif constitue une entrée expérimentale. Sa juridiction, sa nomenclature, sa version temporelle, sa couverture hiérarchique, sa provenance et ses empreintes doivent être documentées. Les limites de preuve ne doivent jamais être masquées par l'étape d'explication.
 
-Les preuves normatives doivent être versionnées et compatibles avec la juridiction, la nomenclature et le niveau cible. Le corpus peut combiner la nomenclature HS internationale, les notes de sections et de chapitres, les règles d'interprétation, des extensions régionales, la nomenclature tarifaire nationale et des notes complémentaires nationales.
+## Rôles de données fondamentaux
 
-```yaml
-normative:
-  enabled: true
-  corpus_path: data/normative/chile_2026/
-  jurisdiction: CL
-  nomenclature: national_tariff
-  supported_digits: [2, 4, 6, 8, 10]
-```
+Les implémentations indépendantes associent leurs colonnes locales aux rôles `analysis_id`, `description`, `label` et `group_id` lorsque plusieurs observations partagent une unité supérieure dépendante. Aucun nom de colonne source n'est imposé.
 
-Si la cible est à 10 chiffres mais que le corpus normatif ne couvre que 8 chiffres, cette limite de couverture doit être signalée explicitement.
+## Règle critique d'indépendance
 
-## Utiliser ses propres données
+Les observations liées ne doivent pas traverser les partitions expérimentales. Les implémentations doivent également auditer les identifiants partagés, les doublons exacts et proches, le support historique et la couverture normative.
 
-Les rôles logiques requis sont `analysis_id`, `description`, `label` et, de préférence, `group_id` lorsque plusieurs observations dépendent d'une même entité supérieure. Les noms de colonnes sont configurables.
+## Fiches de spécification
 
-```yaml
-experiment:
-  id: customs_replication
-  mode: custom
+Chaque fiche doit définir l'objectif, les entrées, les préconditions, la procédure ou le pseudocode, les paramètres configurables, les invariants, les sorties, les validations, les métriques, les critères d'acceptation, les cas limites et les métadonnées de reproductibilité.
 
-dataset:
-  path: data/customs.csv
-  analysis_unit: item_id
-  grouping_unit: declaration_id
-  description_column: product_description
-  label_column: tariff_code
+## Vecteurs de test
 
-classification:
-  family: HS
-  jurisdiction: CL
-  nomenclature: national_tariff
-  target_digits: 10
-  hierarchy_digits: [2, 4, 6, 8, 10]
+Des cas d'entrée/sortie et des invariants publiés permettront de vérifier les composants critiques d'une implémentation indépendante sans distribuer le code source de référence.
 
-scope:
-  chapters: null
-```
+## Réplication valide
 
-## Règle critique de partitionnement
+Une réplication méthodologiquement valide documente la taxonomie et les preuves normatives, préserve l'indépendance des groupes et l'isolation des étiquettes, utilise les mêmes cas d'évaluation pour les comparaisons directes, évite l'ajustement sur l'ensemble final d'évaluation, conserve les empreintes/provenance/graines et les résultats au niveau des cas, et déclare explicitement les écarts et limites de couverture.
 
-Les enregistrements dépendants ne doivent pas traverser les partitions :
+---
 
-```text
-historical.group_id ∩ development.group_id = ∅
-historical.group_id ∩ evaluation.group_id  = ∅
-development.group_id ∩ evaluation.group_id = ∅
-```
+## Related documentation / Documentación relacionada / Documentation associée
 
-Le cadre doit également auditer les identifiants partagés, les doublons exacts, les quasi-doublons et le support historique des codes cibles.
+- [`docs/DATA_CONTRACT.md`](docs/DATA_CONTRACT.md)
+- [`docs/TAXONOMY_AND_NORMATIVE_CORPUS.md`](docs/TAXONOMY_AND_NORMATIVE_CORPUS.md)
+- [`docs/EXPERIMENT_PROTOCOL.md`](docs/EXPERIMENT_PROTOCOL.md)
+- [`docs/DATA_PROVENANCE.md`](docs/DATA_PROVENANCE.md)
 
-## Flux de réplication externe
-
-```text
-fournir données + hiérarchie tarifaire + corpus normatif
-  -> mapper les champs logiques
-  -> valider la hiérarchie et la couverture normative
-  -> créer/valider des partitions indépendantes
-  -> auditer dépendances et doublons
-  -> recherche historique
-  -> recherche normative
-  -> intégration / LLM optionnel
-  -> évaluation + analyse d'erreurs + manifeste de reproductibilité
-```
-
-## Démarrage rapide cible
-
-```bash
-python scripts/validate_dataset.py --config configs/examples/custom_dataset.example.yaml
-python scripts/run_experiment.py --config configs/examples/custom_dataset.example.yaml
-```
-
-Une étude de référence sera reproduite via son propre preset versionné, sans interface codée en dur pour un chapitre particulier.
-
-## Réplication méthodologiquement valide
-
-Une réplication doit définir explicitement la nomenclature et le niveau cible, utiliser des étiquettes et des preuves normatives compatibles, préserver l'indépendance des groupes, isoler les vraies étiquettes d'évaluation, comparer les méthodes sur les mêmes instances, éviter l'ajustement sur l'évaluation finale, enregistrer les hashes et la provenance, et déclarer les limites de couverture historique ou normative.
-
-## Documentation
-
-Voir `docs/USING_YOUR_OWN_DATA.md`, `docs/DATA_CONTRACT.md`, `docs/TAXONOMY_AND_NORMATIVE_CORPUS.md`, `docs/EXPERIMENT_PROTOCOL.md`, `docs/REPRODUCIBILITY.md`, `docs/DATA_PROVENANCE.md` et `docs/EXPECTED_RESULTS.md`.
+> Repository scope: **protocol and independent-replication specification, not distribution of the reference software implementation.**
