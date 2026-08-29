@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Local secrets / environment
+.env
+.env.*
+
+# Temporary reproduction outputs
+.tmp/
+tmp/
+work/
+
+# Large or non-redistributable local inputs must not be committed by default.
+data/raw/
+data/private/
+
+# Local model caches
+models/
+.cache/
+
+# Keep approved result artifacts explicit rather than committing arbitrary runs.
+results/runs/*
+!results/runs/.gitkeep
